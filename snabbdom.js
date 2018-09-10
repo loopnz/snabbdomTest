@@ -1,5 +1,6 @@
 const vnode = require('./vnode');
 const api = require('./htmldomapi');
+const is = require('./is');
 
 function sameVnode(vnode1, vnode2) {
 
@@ -8,6 +9,14 @@ function sameVnode(vnode1, vnode2) {
 
 function isVnode(vnode) {
     return vnode.sel !== undefined;
+}
+
+function isUndef(s) {
+    return s === undefined;
+}
+
+function isDef(s) {
+    return s !== undefined;
 }
 
 function init() {
@@ -42,8 +51,29 @@ function init() {
                 elm.setAttribute('class', sel.slice(dot + 1).replace(/\./g, ' '));
             }
 
+            if (is.array(children)) {
+                for (var i = 0; i < children.length; i++) {
+                    var ch = children[i];
+                    if (ch != null) {
+                        api.appendChild(elm, createElm(ch, insertedVnodeQueue));
+                    }
+                }
+            }
+
+        } else {
+
         }
 
+        return vnode.elm;
+    }
+
+    function addVnodes(parent, before, vnodes, startIdx, endIdx, insertedVnodeQueue) {
+        for (; startIdx <= endIdx; ++startIdx) {
+            var ch = vnodes[startIdx];
+            if (ch != null) {
+                api.insertBefore(parent, createElm(ch, insertedVnodeQueue), before);
+            }
+        }
 
 
     }
@@ -52,6 +82,30 @@ function init() {
         var i, hook;
 
         var elm = vnode.elm = oldVnode.elm;
+        var oldCh = oldVnode.children;
+        var ch = vnode.children;
+        if (oldVnode === vnode) {
+            return;
+        }
+
+        if (vnode.data !== undefined) {
+
+        }
+
+        if (isUndef(vnode.text)) {
+
+
+            if (isDef(ch)) {
+
+                if (isDef(oldVnode.text)) {
+                    api.setTextContent(elm, '');
+                }
+                addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
+            }
+
+
+        }
+
 
     }
 
