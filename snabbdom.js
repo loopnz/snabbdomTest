@@ -1,6 +1,7 @@
 const vnode = require('./vnode');
 const api = require('./htmldomapi');
 const is = require('./is');
+const emptyNode = vnode('',{},[],undefined,undefined);
 
 function sameVnode(vnode1, vnode2) {
 
@@ -19,7 +20,21 @@ function isDef(s) {
     return s !== undefined;
 }
 
-function init() {
+const hooks = ['create', 'update', 'remove', 'destroy', 'pre', 'post'];
+
+function init(modules) {
+
+    var i, j, cbs = {};
+
+    for (i = 0; i < hooks.length; i++) {
+        cbs[hooks[i]] = [];
+        for (j = 0; j < modules.length; j++) {
+            var hook = modules[j][hooks[i]];
+            if (hook !== undefined) {
+                cbs[hooks[i]].push(hook);
+            }
+        }
+    }
 
 
     function emptyNodeAt(elm) {
@@ -49,6 +64,10 @@ function init() {
             }
             if (dotIdx > 0) {
                 elm.setAttribute('class', sel.slice(dot + 1).replace(/\./g, ' '));
+            }
+
+            for (i = 0; i < cbs.create.length; i++) {
+                cbs.create[i](emptyNode,vnode);
             }
 
             if (is.array(children)) {

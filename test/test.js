@@ -1,7 +1,9 @@
 const assert = require('assert');
 const h = require('../h');
 const snabbdom = require('../snabbdom');
-const patch = snabbdom.init();
+const patch = snabbdom.init([
+    require('../modules/class')
+]);
 const JSDOM = require('jsdom').JSDOM;
 const document = new JSDOM(`<!DOCTYPE html>`).window.document;
 global.document = document;
@@ -68,7 +70,7 @@ describe('snabbdom', function () {
 
     describe('created element 创建真实dom', function () {
 
-        it('拥有标签名称', function () {
+        it('从sel中获取标签名称', function () {
             const vnode = h('div');
             const elm = patch(vnode0, vnode).elm;
             assert.equal(elm.tagName, 'DIV');
@@ -84,10 +86,31 @@ describe('snabbdom', function () {
             elm.remove();
         });
 
-        it("处理id", function () {
+        it("从sel中获取id", function () {
 
             elm = patch(vnode0, h('div', [h('div#unique')])).elm;
             assert.equal(elm.firstChild.id, 'unique');
+        });
+
+        it("选择器sel中包含1个或多个class,将class解析出来",function(){
+            elm = patch(vnode0,h('div',[h('i.am.a.class')])).elm;
+            assert(elm.firstChild.classList.contains('am'));
+            assert(elm.firstChild.classList.contains('a'));
+            assert(elm.firstChild.classList.contains('class'));
+        });
+
+        it("从data的class对象中取出class,将其添加到vnode对应的elm上",function(){
+
+            elm = patch(vnode0,h('i',{class:{
+                am:true,
+                a:true,
+                class:true,
+                not:false
+            }})).elm;
+            assert(elm.classList.contains('am'));
+            assert(elm.classList.contains('a'));
+            assert(elm.classList.contains('class'));
+            assert(!elm.classList.contains('not'));
         });
 
     });
