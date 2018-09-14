@@ -1,7 +1,7 @@
 const vnode = require('./vnode');
 const api = require('./htmldomapi');
 const is = require('./is');
-const emptyNode = vnode('',{},[],undefined,undefined);
+const emptyNode = vnode('', {}, [], undefined, undefined);
 
 function sameVnode(vnode1, vnode2) {
 
@@ -67,7 +67,7 @@ function init(modules) {
             }
 
             for (i = 0; i < cbs.create.length; i++) {
-                cbs.create[i](emptyNode,vnode);
+                cbs.create[i](emptyNode, vnode);
             }
 
             if (is.array(children)) {
@@ -93,6 +93,10 @@ function init(modules) {
                 api.insertBefore(parent, createElm(ch, insertedVnodeQueue), before);
             }
         }
+    }
+
+    function updateChildren(parentElm, oldCh, newCh, insertedVnodeQueue) {
+
 
 
     }
@@ -113,8 +117,11 @@ function init(modules) {
 
         if (isUndef(vnode.text)) {
 
-
-            if (isDef(ch)) {
+            if (isDef(oldCh) && isDef(ch)) {
+                if (oldCh !== ch) {
+                    updateChildren(elm, oldCh, ch, insertedVnodeQueue);
+                }
+            } else if (isDef(ch)) {
 
                 if (isDef(oldVnode.text)) {
                     api.setTextContent(elm, '');

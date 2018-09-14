@@ -113,6 +113,25 @@ describe('snabbdom', function () {
             assert(!elm.classList.contains('not'));
         });
 
+        it("从选择器以及data中获取class",function(){
+            elm = patch(vnode0,h('div',[h('i.has',{
+                class:{
+                    classes:true
+                }
+            })])).elm;
+
+            assert(elm.firstChild.classList.contains('has'));
+            assert(elm.firstChild.classList.contains('classes'));
+
+        });
+
+        it('使用text content 创建真实dom',function(){
+            elm = patch(vnode0,h('div',['i am a string'])).elm;
+
+            assert(elm.innerHTML,'i am a string');
+
+        });
+
     });
 
 
