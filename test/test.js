@@ -2,7 +2,8 @@ const assert = require('assert');
 const h = require('../h');
 const snabbdom = require('../snabbdom');
 const patch = snabbdom.init([
-    require('../modules/class')
+    require('../modules/class'),
+    require('../modules/props')
 ]);
 const JSDOM = require('jsdom').JSDOM;
 const document = new JSDOM(`<!DOCTYPE html>`).window.document;
@@ -131,8 +132,51 @@ describe('snabbdom', function () {
             assert(elm.innerHTML,'i am a string');
 
         });
+        it('子元素是span元素与text content混合时创建真实dom',function(){
+            elm = patch(vnode0,h('div',[h('span'),'i am a string'])).elm;
+            assert.equal(elm.childNodes[0].tagName,'SPAN');
+            assert.equal(elm.childNodes[1].textContent,'i am a string');
+        });
+
+        it("当有props时创建dom",function(){
+            elm=patch(vnode0,h('a',{
+                props:{
+                    src:'http://localhost/'
+                }
+            })).elm;
+            assert.equal(elm.src,'http://localhost/');
+        });
+
+        it("patch原生dom与vnode",function(){
+            var elmWithIdAndClass =document.createElement('div');
+            elmWithIdAndClass.id = 'id';
+            elmWithIdAndClass.className = 'class';
+            var vnode1 = h('div#id.class',[h('span','hi')]);
+            elm = patch(elmWithIdAndClass,vnode1).elm;
+            assert.strictEqual(elm,elmWithIdAndClass);
+            assert.equal(elm.tagName,'DIV');
+            assert.equal(elm.id,'id');
+            assert.equal(elm.className,'class');
+            assert.equal(elm.childNodes[0].tagName,'SPAN');
+            assert.equal(vnode1.children[0].text,'hi');
+        });
+
+        it('创建注释',function(){
+            elm = patch(vnode0,h('!','test')).elm;
+            assert.equal(elm.nodeType,global.document.COMMENT_NODE);
+            assert.equal(elm.textContent,'test');
+        });
 
     });
 
+
+    describe('patching an element,比较virtual dom的不同,然后渲染真实dom',function(){
+
+        it("改变element的classes",function(){
+
+        });
+
+
+    });
 
 })

@@ -20,11 +20,25 @@ function createElement(tagName){
     return global.document.createElement(tagName);
 }
 
+function createTextNode(text){
+    return global.document.createTextNode(text);
+}
+
+function createComment(text) {
+    return document.createComment(text);
+}
+
+function nextSibling(elm){
+    return elm.nextSibling;
+}  
 
 module.exports = {
     tagName: tagName,
     parentNode:parentNode,
     createElement:createElement,
     appendChild:appendChild,
-    insertBefore:insertBefore
+    insertBefore:insertBefore,
+    createTextNode:createTextNode,
+    nextSibling:nextSibling,
+    createComment:createComment
 }
