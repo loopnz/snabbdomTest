@@ -81,7 +81,6 @@ function init(modules) {
                     }
                 }
             }
-
         } else {
             vnode.elm = api.createTextNode(vnode.text);
         }
@@ -101,7 +100,7 @@ function init(modules) {
     function updateChildren(parentElm, oldCh, newCh, insertedVnodeQueue) {
         var oldStartIdx = 0,
             newStartIdx = 0;
-        var oldEndIdx = oldCh.length - 1;
+        var oldEndIdx = oldCh.length - 1; 
         var oldStartVnode = oldCh[0];
         var oldEndVnode = oldCh[oldEndIdx];
         var newEndIdx = newCh.length - 1;
@@ -139,7 +138,13 @@ function init(modules) {
         }
 
         if (vnode.data !== undefined) {
-
+            for(i=0;i<cbs.update.length;i++){
+                cbs.update[i](oldVnode,vnode);
+            }
+            i = vnode.data.hook;
+            if(isDef(i)&&isDef(i=i.update)){
+                i(oldVnode,vnode);
+            }
         }
 
         if (isUndef(vnode.text)) {

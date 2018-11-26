@@ -31,7 +31,21 @@ function createComment(text) {
 function nextSibling(elm){
     return elm.nextSibling;
 }  
+function isElement(elm){
+    return elm.nodeType === 1;
+}
 
+function isText(elm){
+    return elm.nodeType ===3;
+}
+
+function isComment(elm){
+    return elm.nodeType === 8;
+}
+
+function getTextContent(elm){
+    return elm.textContent;
+}
 module.exports = {
     tagName: tagName,
     parentNode:parentNode,
@@ -40,5 +54,9 @@ module.exports = {
     insertBefore:insertBefore,
     createTextNode:createTextNode,
     nextSibling:nextSibling,
-    createComment:createComment
+    createComment:createComment,
+    isElement:isElement,
+    isText:isText,
+    isComment:isComment,
+    getTextContent:getTextContent
 }

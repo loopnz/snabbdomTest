@@ -1,6 +1,8 @@
 const assert = require('assert');
 const h = require('../h');
 const snabbdom = require('../snabbdom');
+const toVNode = require('../tovnode').toVNode;
+
 const patch = snabbdom.init([
     require('../modules/class'),
     require('../modules/props')
@@ -176,14 +178,14 @@ describe('snabbdom', function () {
 
         it("改变element的classes", function () {
             var vnode1 = h('i', {
-                classes: {
+                class: {
                     i: true,
                     am: true,
                     horse: true
                 }
             });
             var vnode2 = h('i', {
-                classes: {
+                class: {
                     i: true,
                     am: true,
                     horse: false
@@ -193,42 +195,62 @@ describe('snabbdom', function () {
             elm = patch(vnode1, vnode2).elm;
             assert(elm.classList.contains('i'));
             assert(elm.classList.contains('am'));
-            assert(elm.classList.contains('horse'));
+            assert(!elm.classList.contains('horse'));
+        });
+
+        it("changes an elements props",function(){
+            var vnode1 = h('a', {props: {src: 'http://other/'}});
+            var vnode2 = h('a', {props: {src: 'http://localhost/'}});
+            patch(vnode0, vnode1);
+            elm = patch(vnode1, vnode2).elm;
+            assert.equal(elm.src, 'http://localhost/');
+        });
+    });
+
+    describe('using toVNode()',function(){
+
+        // it('can remove previous children of the root element',function(){
+        //     var h2 = document.createElement('h2');
+        //     h2.textContent = 'Hello';
+        //     var prevElm = document.createElement('div');
+        //     prevElm.id = 'id';
+        //     prevElm.className = 'class';
+        //     prevElm.appendChild(h2);
+        //     var nextNode = h('div#id.class',[h('span','Hi')]);
+        //     var vnode = patch(toVNode(prevElm),nextNode);
+        //     elm = vnode.elm;
+        //     assert.strictEqual(elm,prevElm); 
+        // });
+    });
+
+    describe('updating children with keys',function(){
+
+        function spanNum(n){
+            if(n==null){
+                return n;
+            }else if(typeof n==='string'){
+                return h('span',{},n);
+            }else{
+                return h('span',{key:n},n.toString());
+            }
+        }
+
+        describe('addition of elements',function(){
+             it('appends elements,附加元素',function(){
+                var vnode1 = h('span',[1].map(spanNum));
+                var vnode2 = h('span',[1,2,3].map(spanNum));
+                elm = patch(vnode0,vnode1).elm;
+                assert.equal(elm.children.length,1);
+                elm = patch(vnode1,vnode2).elm;
+                assert.equal(elm.children.length,3);
+                assert.equal(elm.children[1].innerHTML,2);
+                assert.equal(elm.children[2].innerHTML,3);
+             }); 
         });
 
 
     });
 
-})
 
-var fn = function (s, l, a, i) {
-    var v0, v1, v2, v3 = l && ('\u0024select' in l),
-        v4, v5 = l && ('\u0024event' in l);
-    if (!(v3)) {
-        if (s) {
-            v2 = s.$select;
-        }
-    } else {
-        v2 = l.$select;
-    }
-    if (v2 != null) {
-        v1 = v2.toggle;
-    } else {
-        v1 = undefined;
-    }
-    if (v1 != null) {
-        if (!(v5)) {
-            if (s) {
-                v4 = s.$event;
-            }
-        } else {
-            v4 = l.$event;
-        }
-        v0 = v2.toggle(v4);
-    } else {
-        v0 = undefined;
-    }
-    return v0;
-};
-return fn;
-}
+
+})
