@@ -2,7 +2,6 @@ const assert = require('assert');
 const h = require('../h');
 const snabbdom = require('../snabbdom');
 const toVNode = require('../tovnode').toVNode;
-
 const patch = snabbdom.init([
     require('../modules/class'),
     require('../modules/props')
@@ -10,6 +9,23 @@ const patch = snabbdom.init([
 const JSDOM = require('jsdom').JSDOM;
 const document = new JSDOM(`<!DOCTYPE html>`).window.document;
 global.document = document;
+
+function prop(name) {
+    return function (obj) {
+        return obj[name];
+    }
+}
+
+function map(fn, list) {
+    let ret = [];
+
+    for (let i = 0; i < list.length; i++) {
+        ret[i] = fn(list[i]);
+    }
+    return ret;
+}
+
+const inner = prop('innerHTML');
 
 describe('snabbdom', function () {
 
@@ -19,6 +35,7 @@ describe('snabbdom', function () {
     beforeEach(function () {
 
         elm = document.createElement('div');
+        document.body.appendChild(elm);
         vnode0 = elm;
     });
 
@@ -180,15 +197,15 @@ describe('snabbdom', function () {
             var vnode1 = h('i', {
                 class: {
                     i: true,
-                    am: true,
-                    horse: true
+                        am: true,
+                        horse: true
                 }
             });
             var vnode2 = h('i', {
                 class: {
                     i: true,
-                    am: true,
-                    horse: false
+                        am: true,
+                        horse: false
                 }
             });
             patch(vnode0, vnode1);
@@ -198,16 +215,24 @@ describe('snabbdom', function () {
             assert(!elm.classList.contains('horse'));
         });
 
-        it("changes an elements props",function(){
-            var vnode1 = h('a', {props: {src: 'http://other/'}});
-            var vnode2 = h('a', {props: {src: 'http://localhost/'}});
+        it("changes an elements props", function () {
+            var vnode1 = h('a', {
+                props: {
+                    src: 'http://other/'
+                }
+            });
+            var vnode2 = h('a', {
+                props: {
+                    src: 'http://localhost/'
+                }
+            });
             patch(vnode0, vnode1);
             elm = patch(vnode1, vnode2).elm;
             assert.equal(elm.src, 'http://localhost/');
         });
     });
 
-    describe('using toVNode()',function(){
+    describe('using toVNode()', function () {
 
         // it('can remove previous children of the root element',function(){
         //     var h2 = document.createElement('h2');
@@ -223,29 +248,88 @@ describe('snabbdom', function () {
         // });
     });
 
-    describe('updating children with keys',function(){
+    describe('updating children with keys,有key的情况下更新节点', function () {
 
-        function spanNum(n){
-            if(n==null){
+        function spanNum(n) {
+            if (n == null) {
                 return n;
-            }else if(typeof n==='string'){
-                return h('span',{},n);
-            }else{
-                return h('span',{key:n},n.toString());
+            } else if (typeof n === 'string') {
+                return h('span', {}, n);
+            } else {
+                return h('span', {
+                    key: n
+                }, n.toString());
             }
         }
 
-        describe('addition of elements',function(){
-             it('appends elements,附加元素',function(){
-                var vnode1 = h('span',[1].map(spanNum));
-                var vnode2 = h('span',[1,2,3].map(spanNum));
-                elm = patch(vnode0,vnode1).elm;
-                assert.equal(elm.children.length,1);
-                elm = patch(vnode1,vnode2).elm;
-                assert.equal(elm.children.length,3);
-                assert.equal(elm.children[1].innerHTML,2);
-                assert.equal(elm.children[2].innerHTML,3);
-             }); 
+        describe('addition of elements', function () {
+            it('appends elements,在后面添加节点', function () {
+                var vnode1 = h('span', [1].map(spanNum));
+                var vnode2 = h('span', [1, 2, 3].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 1);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 3);
+                assert.equal(elm.children[1].innerHTML, 2);
+                assert.equal(elm.children[2].innerHTML, 3);
+            });
+
+            it('prepends elements,在前面添加节点', function () {
+                var vnode1 = h('span', [4, 5].map(spanNum));
+                var vnode2 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 2);
+                elm = patch(vnode1, vnode2).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3', '4', '5']);
+            });
+
+            it('add elements in the middle,在中间加节点', function () {
+                var vnode1 = h('span', [1, 2, 4, 5].map(spanNum));
+                var vnode2 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 4);
+                assert.equal(elm.children.length, 4);
+                elm = patch(vnode1, vnode2).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3', '4', '5']);
+            });
+
+            it('add elements at begin and end,头和尾同时添加元素', function() {
+                var vnode1 = h('span', [2, 3, 4].map(spanNum));
+                var vnode2 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                elm = patch(vnode0, vnode1).elm; 
+                assert.equal(elm.children.length, 3);
+                elm = patch(vnode1, vnode2).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3', '4', '5']);
+              });
+            it('adds children to parent with no children,给没有子节点的父元素添加节点',function(){
+                var vnode1 = h('span', {key: 'span'});
+                var vnode2 = h('span', {key: 'span'}, [1, 2, 3].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 0);
+                elm = patch(vnode1, vnode2).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
+            });
+
+            it('removes all children from parent,移掉父节点的所有子节点',function(){
+                var vnode1 = h('span', {key: 'span'}, [1, 2, 3].map(spanNum));
+                var vnode2 = h('span', {key: 'span'});
+                elm = patch(vnode0, vnode1).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 0);
+            });
+
+            it('update one child with same key but different sel,更新key相同但是sel不用的节点',function(){
+                var vnode1 = h('span', {key: 'span'}, [1, 2, 3].map(spanNum));
+                var vnode2 = h('span', {key: 'span'}, [spanNum(1), h('i', {key: 2}, '2'), spanNum(3)]);
+                elm = patch(vnode0, vnode1).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
+                elm = patch(vnode1, vnode2).elm;
+                assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
+                assert.equal(elm.children.length, 3);
+                assert.equal(elm.children[1].tagName, 'I');
+            });
+
         });
 
 

@@ -15,6 +15,10 @@ function appendChild(node,child){
     node.appendChild(child);
 }
 
+function removeChild(node,child){
+    node.removeChild(child);
+}
+
 function createElement(tagName){
 
     return global.document.createElement(tagName);
@@ -51,6 +55,7 @@ module.exports = {
     parentNode:parentNode,
     createElement:createElement,
     appendChild:appendChild,
+    removeChild:removeChild,
     insertBefore:insertBefore,
     createTextNode:createTextNode,
     nextSibling:nextSibling,
