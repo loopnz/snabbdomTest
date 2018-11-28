@@ -50,6 +50,9 @@ function isComment(elm){
 function getTextContent(elm){
     return elm.textContent;
 }
+function setTextContent(elm,text){
+    return elm.textContent = text;
+}
 module.exports = {
     tagName: tagName,
     parentNode:parentNode,
@@ -63,5 +66,6 @@ module.exports = {
     isElement:isElement,
     isText:isText,
     isComment:isComment,
-    getTextContent:getTextContent
+    getTextContent:getTextContent,
+    setTextContent:setTextContent
 }

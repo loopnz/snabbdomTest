@@ -166,8 +166,9 @@ function init(modules) {
         var elmToMove;
         var before;
         while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-
-            if (sameVnode(oldStartVnode, newStartVnode)) {
+            if (oldStartVnode == null) {
+                oldStartVnode = oldCh[++oldStartIdx];
+            } else if (sameVnode(oldStartVnode, newStartVnode)) {
                 patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue);
                 oldStartVnode = oldCh[++oldStartIdx];
                 newStartVnode = newCh[++newStartIdx];

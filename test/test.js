@@ -262,7 +262,7 @@ describe('snabbdom', function () {
             }
         }
 
-        describe('addition of elements', function () {
+        describe('addition of elements,添加元素', function () {
             it('appends elements,在后面添加节点', function () {
                 var vnode1 = h('span', [1].map(spanNum));
                 var vnode2 = h('span', [1, 2, 3].map(spanNum));
@@ -293,35 +293,49 @@ describe('snabbdom', function () {
                 assert.deepEqual(map(inner, elm.children), ['1', '2', '3', '4', '5']);
             });
 
-            it('add elements at begin and end,头和尾同时添加元素', function() {
+            it('add elements at begin and end,头和尾同时添加元素', function () {
                 var vnode1 = h('span', [2, 3, 4].map(spanNum));
                 var vnode2 = h('span', [1, 2, 3, 4, 5].map(spanNum));
-                elm = patch(vnode0, vnode1).elm; 
+                elm = patch(vnode0, vnode1).elm;
                 assert.equal(elm.children.length, 3);
                 elm = patch(vnode1, vnode2).elm;
                 assert.deepEqual(map(inner, elm.children), ['1', '2', '3', '4', '5']);
-              });
-            it('adds children to parent with no children,给没有子节点的父元素添加节点',function(){
-                var vnode1 = h('span', {key: 'span'});
-                var vnode2 = h('span', {key: 'span'}, [1, 2, 3].map(spanNum));
+            });
+            it('adds children to parent with no children,给没有子节点的父元素添加节点', function () {
+                var vnode1 = h('span', {
+                    key: 'span'
+                });
+                var vnode2 = h('span', {
+                    key: 'span'
+                }, [1, 2, 3].map(spanNum));
                 elm = patch(vnode0, vnode1).elm;
                 assert.equal(elm.children.length, 0);
                 elm = patch(vnode1, vnode2).elm;
                 assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
             });
 
-            it('removes all children from parent,移掉父节点的所有子节点',function(){
-                var vnode1 = h('span', {key: 'span'}, [1, 2, 3].map(spanNum));
-                var vnode2 = h('span', {key: 'span'});
+            it('removes all children from parent,移掉父节点的所有子节点', function () {
+                var vnode1 = h('span', {
+                    key: 'span'
+                }, [1, 2, 3].map(spanNum));
+                var vnode2 = h('span', {
+                    key: 'span'
+                });
                 elm = patch(vnode0, vnode1).elm;
                 assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
                 elm = patch(vnode1, vnode2).elm;
                 assert.equal(elm.children.length, 0);
             });
 
-            it('update one child with same key but different sel,更新key相同但是sel不用的节点',function(){
-                var vnode1 = h('span', {key: 'span'}, [1, 2, 3].map(spanNum));
-                var vnode2 = h('span', {key: 'span'}, [spanNum(1), h('i', {key: 2}, '2'), spanNum(3)]);
+            it('update one child with same key but different sel,更新key相同但是sel不用的节点', function () {
+                var vnode1 = h('span', {
+                    key: 'span'
+                }, [1, 2, 3].map(spanNum));
+                var vnode2 = h('span', {
+                    key: 'span'
+                }, [spanNum(1), h('i', {
+                    key: 2
+                }, '2'), spanNum(3)]);
                 elm = patch(vnode0, vnode1).elm;
                 assert.deepEqual(map(inner, elm.children), ['1', '2', '3']);
                 elm = patch(vnode1, vnode2).elm;
@@ -332,6 +346,155 @@ describe('snabbdom', function () {
 
         });
 
+        describe('removal of elements,移除元素', function () {
+            it('removes elements from the beginning,从头移除节点', function () {
+                var vnode1 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                var vnode2 = h('span', [3, 4, 5].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 5);
+                elm = patch(vnode1, vnode2).elm;
+                assert.deepEqual(map(inner, elm.children), ['3', '4', '5']);
+            });
+
+            it('removes elements from the end,从尾部移除节点', function () {
+                var vnode1 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                var vnode2 = h('span', [1, 2, 3].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 5);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 3);
+                assert.equal(elm.children[0].innerHTML, '1');
+                assert.equal(elm.children[1].innerHTML, '2');
+                assert.equal(elm.children[2].innerHTML, '3');
+
+            });
+            it('removes elements from the middle,从中间移除元素', function () {
+                var vnode1 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                var vnode2 = h('span', [1, 2, 4, 5].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 5);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 4);
+                assert.deepEqual(elm.children[0].innerHTML, '1');
+                assert.equal(elm.children[0].innerHTML, '1');
+                assert.equal(elm.children[1].innerHTML, '2');
+                assert.equal(elm.children[2].innerHTML, '4');
+                assert.equal(elm.children[3].innerHTML, '5');
+            });
+        });
+
+        describe('element reordering,元素重新排序', function () {
+            it('moves element forward,移动元素到最前面', function () {
+                var vnode1 = h('span', [1, 2, 3, 4].map(spanNum));
+                var vnode2 = h('span', [2, 3, 1, 4].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 4);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 4);
+                assert.equal(elm.children[0].innerHTML, '2');
+                assert.equal(elm.children[1].innerHTML, '3');
+                assert.equal(elm.children[2].innerHTML, '1');
+                assert.equal(elm.children[3].innerHTML, '4');
+            });
+            it('moves element to end,移动元素到最后面', function () {
+                var vnode1 = h('span', [1, 2, 3].map(spanNum));
+                var vnode2 = h('span', [2, 3, 1].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 3);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 3);
+                assert.equal(elm.children[0].innerHTML, '2');
+                assert.equal(elm.children[1].innerHTML, '3');
+                assert.equal(elm.children[2].innerHTML, '1');
+            });
+
+            it('moves element backwards,往前面移动元素', function () {
+                var vnode1 = h('span', [1, 2, 3, 4].map(spanNum));
+                var vnode2 = h('span', [1, 4, 2, 3].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 4);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 4);
+                assert.equal(elm.children[0].innerHTML, '1');
+                assert.equal(elm.children[1].innerHTML, '4');
+                assert.equal(elm.children[2].innerHTML, '2');
+                assert.equal(elm.children[3].innerHTML, '3');
+            });
+
+            it('swaps first and last,交换第一个和最后一个', function () {
+                var vnode1 = h('span', [1, 2, 3, 4].map(spanNum));
+                var vnode2 = h('span', [4, 2, 3, 1].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 4);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 4);
+                assert.equal(elm.children[0].innerHTML, '4');
+                assert.equal(elm.children[1].innerHTML, '2');
+                assert.equal(elm.children[2].innerHTML, '3');
+                assert.equal(elm.children[3].innerHTML, '1');
+            });
+
+        });
+
+        describe('组合添加元素,移除元素,元素重新排序操作', function () {
+
+            it("move to left and replace,往左边移动以及替换元素", function () {
+                var vnode1 = h('span', [1, 2, 3, 4, 5].map(spanNum));
+                var vnode2 = h('span', [4, 1, 2, 3, 6].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 5);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 5);
+                assert.equal(elm.children[0].innerHTML, '4');
+                assert.equal(elm.children[1].innerHTML, '1');
+                assert.equal(elm.children[2].innerHTML, '2');
+                assert.equal(elm.children[3].innerHTML, '3');
+                assert.equal(elm.children[4].innerHTML, '6');
+            });
+
+            it("move to left and leaves hole,往左边移动以及替换删除", function () {
+                {
+                    var vnode1 = h('span', [1, 4, 5].map(spanNum));
+                    var vnode2 = h('span', [4, 6].map(spanNum));
+                    elm = patch(vnode0, vnode1).elm;
+                    assert.equal(elm.children.length, 3);
+                    elm = patch(vnode1, vnode2).elm;
+                    assert.deepEqual(map(inner, elm.children), ['4', '6']);
+                }
+            });
+            it('handles moved and set to undefined element ending at the end,往左移动元素', function () {
+                var vnode1 = h('span', [2, 4, 5].map(spanNum));
+                var vnode2 = h('span', [4, 5, 3].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.children.length, 3);
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.children.length, 3);
+                assert.equal(elm.children[0].innerHTML, '4');
+                assert.equal(elm.children[1].innerHTML, '5');
+                assert.equal(elm.children[2].innerHTML, '3');
+            });
+            it('moves a key in non-keyed nodes with a size up,有些节点子元素没有key', function () {
+                var vnode1 = h('span', [1, 'a', 'b', 'c'].map(spanNum));
+                var vnode2 = h('span', ['d', 'a', 'b', 'c', 1, 'e'].map(spanNum));
+                elm = patch(vnode0, vnode1).elm;
+                assert.equal(elm.childNodes.length, 4);
+                assert.equal(elm.textContent, '1abc');
+                elm = patch(vnode1, vnode2).elm;
+                assert.equal(elm.childNodes.length, 6);
+                assert.equal(elm.textContent, 'dabc1e');
+            });
+
+        });
+
+
+        it('reverses elements,反转节点数组',function(){
+            var vnode1 = h('span', [1, 2, 3, 4, 5, 6, 7, 8].map(spanNum));
+            var vnode2 = h('span', [8, 7, 6, 5, 4, 3, 2, 1].map(spanNum));
+            elm = patch(vnode0, vnode1).elm;
+            assert.equal(elm.children.length, 8);
+            elm = patch(vnode1, vnode2).elm;
+            assert.deepEqual(map(inner, elm.children), ['8', '7', '6', '5', '4', '3', '2', '1']);
+        });
 
     });
 
